@@ -1,0 +1,206 @@
+/* Preloader Plungin Style */
+html, body {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  max-width: 640px;
+  height: 100%;
+  margin: 0 auto;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-callout: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-text-size-adjust: none;
+}
+body, .preload {
+  background: rgb(69, 72, 77); /* Old browsers */
+  background: -moz-linear-gradient(top, rgba(69, 72, 77, 1) 0%, rgba(0, 0, 0, 1) 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(69, 72, 77, 1)), color-stop(100%, rgba(0, 0, 0, 1))); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, rgba(69, 72, 77, 1) 0%, rgba(0, 0, 0, 1) 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, rgba(69, 72, 77, 1) 0%, rgba(0, 0, 0, 1) 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, rgba(69, 72, 77, 1) 0%, rgba(0, 0, 0, 1) 100%); /* IE10+ */
+  background: linear-gradient(to bottom, rgba(69, 72, 77, 1) 0%, rgba(0, 0, 0, 1) 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#45484d', endColorstr='#000000', GradientType=0); /* IE6-9 */
+}
+.preload {
+  height: 100%;
+  display: block;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 101;
+  max-width: 640px;
+}
+.load {
+  position: absolute;
+  width: 100%;
+  top: 50%;
+  left: 0;
+  right: 0;
+  margin: auto;
+  -webkit-transform: translate3d(0, -50%, 0);
+  transform: translate3d(0, -50%, 0);
+}
+.load-logo {
+  display: block;
+  margin: 0 auto;
+  color: #fff;
+  text-align: center;
+}
+.game {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: none;
+}
+.g-bg {
+  width: 100%;
+}
+.g-table {
+  width: 96%;
+  position: absolute;
+  top: 5%;
+  margin: auto;
+  left: 0;
+  right: 0;
+}
+.g-card {
+  position: absolute;
+  bottom: 3%;
+  right: 3%;
+  width: 14%;
+}
+.g-bl-card {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 33%;
+}
+.btn-group {
+  position: absolute;
+  bottom: 8%;
+}
+.btn-g1, .btn-g2 {
+  width: 52%;
+  display: block;
+  margin: 0 auto 10px;
+}
+
+/* mask */
+.m-mask {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 101;
+  display: none;
+  max-width: 640px;
+  margin: auto;
+}
+.m-mask-bg {
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, .7);
+}
+.m-mask-main {
+  width: 90%;
+  height: 90%;
+  background: #fff2cd;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  bottom: 0;
+}
+.m-mask-close {
+  position: absolute;
+  top: 3%;
+  right: 3%;
+  width: 29px;
+  height: 27px;
+  background: url(../images/btn-c.png)no-repeat;
+  cursor: pointer;
+}
+
+
+
+
+
+
+
+
+
+
+
+/*****iconfont****/
+@font-face {
+  font-family: 'iconfont';
+  src: url('font/iconfont.eot'); /* IE9*/
+  src: url('font/iconfont.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+  url('font/iconfont.woff') format('woff'), /* chrome、firefox */
+  url('font/iconfont.ttf') format('truetype'), /* chrome、firefox、opera、Safari, Android, iOS 4.2+*/
+  url('font/iconfont.svg#iconfont') format('svg'); /* iOS 4.1- */
+}
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-stroke-width: 0.2px;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/*********** Animated **********/
+.animated {
+  -webkit-animation-duration: 1s;
+  animation-duration: 1s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+.animated.infinite {
+  -webkit-animation-iteration-count: infinite;
+  animation-iteration-count: infinite;
+}
+.animated.hinge {
+  -webkit-animation-duration: 2s;
+  animation-duration: 2s;
+}
+@-webkit-keyframes pulse {
+  0% {
+    -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
+  }
+  50% {
+    -webkit-transform: scale3d(1.05, 1.05, 1.05);
+    transform: scale3d(1.05, 1.05, 1.05);
+  }
+  100% {
+    -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
+  }
+}
+@keyframes pulse {
+  0% {
+    -webkit-transform: scale3d(1, 1, 1);
+    -ms-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
+  }
+  50% {
+    -webkit-transform: scale3d(1.05, 1.05, 1.05);
+    -ms-transform: scale3d(1.05, 1.05, 1.05);
+    transform: scale3d(1.05, 1.05, 1.05);
+  }
+  100% {
+    -webkit-transform: scale3d(1, 1, 1);
+    -ms-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
+  }
+}
+.pulse {
+  -webkit-animation-name: pulse;
+  animation-name: pulse;
+}

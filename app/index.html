@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>德扑王</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <meta name="apple-touch-fullscreen" content="yes" />
+
+  <meta name="apple-mobile-web-app-capable" content="yes"  />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black"  />
+  <meta name="format-detection" content="telephone=no , email = no"  />
+  <meta name="Keywords" content="云彩科技">
+  <meta name="Description" content="云彩科技">
+  <meta name="author" content="云彩科技">
+  <!-- build:css(.tmp) styles/app.css -->
+  <link rel="stylesheet" href="./styles/main.css">
+  <!-- endbuild -->
+  <!-- build:js scripts/preload.js-->
+  <script src="./scripts/lib/preloader.js"></script>
+  <!-- endbuild -->
+
+</head>
+<body>
+  <div id="j-preload" class="preload">
+    <div class="load">
+      <img class="load-logo pulse animated" alt="loading" src="./images/logo.png"/>
+    </div>
+  </div>
+
+  <div class="game" id="j-game">
+    <img src="images/hm.gif" data-src="images/bg.jpg" alt="bg" class="j-lazyload g-bg"/>
+    <img src="images/hm.gif" data-src="images/table.png" alt="table" class="j-lazyload g-table"/>
+    <img src="images/hm.gif" data-src="images/bl-card.png" alt="bl-card" class="j-lazyload g-bl-card"/>
+    <img src="images/hm.gif" data-src="images/card.png" alt="card-text" class="j-lazyload g-card" id="j-card"/>
+
+    <div class="btn-group">
+      <img src="images/btn-g1.png" alt="限时模式" class="btn-g1"/>
+      <img src="images/btn-g2.png" alt="限题模式" class="btn-g2"/>
+    </div>
+
+  </div>
+
+  <div class="m-mask" id="j-mask">
+    <div class="m-mask-bg"></div>
+    <div class="m-mask-main">
+      <i class="m-mask-close" id="j-mask-close"></i>
+      <div class="m-mask-text">
+        <img src="images/mask-title.png" alt="">
+      </div>
+    </div>
+  </div>
+
+  <!-- Plugin -->
+  <!-- build:js scripts/plugin.js-->
+  <script src="./scripts/lib/zepto.js"></script>
+  <script src="./scripts/lib/fastclick.js"></script>
+  <script src="./scripts/lib/touch.js"></script>
+  <!-- endbuild -->
+  <!-- build:js scripts/app.js-->
+  <script src="./scripts/game.js"></script>
+  <script src="./scripts/main.js"></script>
+  <!-- endbuild -->
+</body>
+</html>
