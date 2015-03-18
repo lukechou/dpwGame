@@ -125,6 +125,16 @@ window.addEventListener('DOMContentLoaded', function () {
     game.start(gameType);
   });
 
+  $('#j-card-group').on('touchstart', 'button', function(event) {
+    event.preventDefault();
+    var aw = Number($(this).attr('data-aw'))||0;
+    game.answerItem(aw,$(this));
+
+  });
+
+
+
+
 });
 
 window.addEventListener('load', function () {

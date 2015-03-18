@@ -59,9 +59,11 @@ body, .preload { background: rgb(69, 72, 77); /* Old browsers */ background: -mo
 .g-main { display: none; -webkit-transition: .2s .3s; transition: .2s .3s; }
 .bg-bottom { position: absolute; bottom: 0; left: 0; width: 100%; }
 .card-group { position: absolute; bottom: 0; width: 100%; }
-.card-group>button { float: left; border: none; background: transparent; width: 25%; margin: 0 4% 2%; }
+.card-group>button { float: left; border: none; background: transparent; width: 25%; margin: 0 4% 2%; position: relative; }
 .card-group>button>img { width: 100%; }
-.g-main.active { display: block;}
+.card-group>button>span { width: 16px; font-size: 1.6rem; position: absolute; top: 50%; left: 0; right: 0; margin: auto; -webkit-transform: translateY(-50%); transform: translateY(-50%); }
+.game-card { position: absolute; top: 50%;}
+.g-main.active { display: block; }
 
 /*********** Animated **********/
 .animated { -webkit-animation-duration: .3s; animation-duration: .3s; -webkit-animation-fill-mode: both; animation-fill-mode: both; }
