@@ -15,6 +15,11 @@ var dpwGame = (function () {
    * issue  问题数据
    * version 版本号
    * onInit  初始化回调
+   * gameType  游戏类型
+   * itemIndex  题目索引+
+   * awGroup  答案标题
+   * colorGroup  花色对应字体图标
+   * cardGroup  扑克对应字体图标
    *
    */
   dpwGame.prototype = {
@@ -23,6 +28,15 @@ var dpwGame = (function () {
     'issue': null,
     'version': '0.0.1',
     'onInit': null,
+    'gameType': null,
+    'dtzId': null,
+    'startTime': null,
+    'correct': 0,
+    'fault': 0,
+    'itemIndex': 0,
+    'awGroup': ['', '皇家同花顺', '同花顺', '金刚', '葫芦', '同花', '顺子', '三条', '两对', '一对', '高牌'],
+    'colorGroup': ['', '&#xe60e;', '&#xe60d;', '&#xe610;', '&#xe60f;'],
+    'cardGroup': ['', '', '&#xe600;', '&#xe601;', '&#xe602;', '&#xe603;', '&#xe604;', '&#xe605;', '&#xe606;', '&#xe607;', '&#xe608;', '&#xe609;', '&#xe60a;', '&#xe60b;', '&#xe60c;']
   };
 
   dpwGame.prototype.init = function () {
@@ -33,12 +47,37 @@ var dpwGame = (function () {
     }
   };
 
+  dpwGame.prototype.getItemCard = function () {
+    var _this = this;
+    debugger
+  };
+
+  dpwGame.prototype.getAwGroup = function () {
+
+    var _this = this;
+    var awText = null;
+    var arr = [];
+    var html = '';
+
+    for (var i = 1; i < 4; i++) {
+      '<button><img src="images/btn-y.png" alt="btn-y"></button>'
+      arr.push(_this.issue[_this.itemIndex]['r' + i])
+    };
+
+    debugger
+  };
+
   dpwGame.prototype.start = function (type) {
 
     var _this = this;
 
     if (_this.issue && _this.status === 0) {
-      debugger
+
+      $('.j-game-rm').addClass('fadeOutLeft');
+      $('#j-game-main').addClass('active');
+      _this.getItemCard();
+      _this.getAwGroup();
+
     } else {
       return;
     }
@@ -67,7 +106,7 @@ var dpwGame = (function () {
     };
 
     $.ajax({
-      url: 'http://poker.yuncai.com/Api/Http/index.php?mod=webapp&op=requestExercise',
+      url: 'http://poker.yuncai.com/Api/Http/index.php',
       type: 'get',
       dataType: 'text',
       data: data,

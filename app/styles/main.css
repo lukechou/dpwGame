@@ -1,3 +1,10 @@
+/*****iconfont****/
+@font-face { font-family: 'iconfont'; src: url('font/iconfont.eot'); /* IE9*/ src: url('font/iconfont.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+  url('font/iconfont.woff') format('woff'), /* chrome、firefox */
+  url('font/iconfont.ttf') format('truetype'), /* chrome、firefox、opera、Safari, Android, iOS 4.2+*/
+url('font/iconfont.svg#iconfont') format('svg'); /* iOS 4.1- */ }
+.iconfont { font-family: 'iconfont' !important; font-size: 1.6rem; font-style: normal; line-height: 1; display: block; -webkit-font-smoothing: antialiased; -webkit-text-stroke-width: .2px; -moz-osx-font-smoothing: grayscale; }
+
 /* Preloader Plungin Style */
 html { font-family: '微软雅黑'; font-size: 62.5%; }
 html, body { display: block; overflow: hidden; width: 100%; max-width: 640px; height: 100%; margin: 0 auto; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-callout: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); -webkit-text-size-adjust: none; }
@@ -9,7 +16,9 @@ body, .preload { background: rgb(69, 72, 77); /* Old browsers */ background: -mo
 .load-logo { display: block; margin: 0 auto; text-align: center; color: #fff; }
 .game { position: relative; display: none; width: 100%; height: 100%; }
 .g-bg { width: 100%; }
+.g-bottom { height: 500px; }
 .g-table { position: absolute; top: 5%; right: 0; left: 0; width: 96%; margin: auto; }
+.g-help { position: absolute; top: 27%; left: 0; right: 0; margin: auto; width: 73%; }
 .g-card { position: absolute; right: 3%; bottom: 3%; width: 14%; -webkit-transition: .2s .5s; transition: .2s .5s; }
 .g-card.active { -webkit-transform: translateX(100%); transform: translateX(100%); opacity: 0; }
 .g-bl-card { position: absolute; bottom: 0; left: 0; width: 33%; }
@@ -46,15 +55,16 @@ body, .preload { background: rgb(69, 72, 77); /* Old browsers */ background: -mo
 .end-bottom p { position: absolute; top: 50%; right: 0; width: 60%; margin: 0; -webkit-transform: translateY(-50%); transform: translateY(-50%); text-align: center; color: #fff; }
 .fc-red { font-size: 2rem; font-weight: bold; color: #f91514; }
 
-/*****iconfont****/
-@font-face { font-family: 'iconfont'; src: url('font/iconfont.eot'); /* IE9*/ src: url('font/iconfont.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
-  url('font/iconfont.woff') format('woff'), /* chrome、firefox */
-  url('font/iconfont.ttf') format('truetype'), /* chrome、firefox、opera、Safari, Android, iOS 4.2+*/
-url('font/iconfont.svg#iconfont') format('svg'); /* iOS 4.1- */ }
-.iconfont { font-family: 'iconfont' !important; font-size: 1.6rem; font-style: normal; line-height: 1; display: block; -webkit-font-smoothing: antialiased; -webkit-text-stroke-width: .2px; -moz-osx-font-smoothing: grayscale; }
+/* Game Nav */
+.g-main { display: none; -webkit-transition: .2s .3s; transition: .2s .3s; }
+.bg-bottom { position: absolute; bottom: 0; left: 0; width: 100%; }
+.card-group { position: absolute; bottom: 0; width: 100%; }
+.card-group>button { float: left; border: none; background: transparent; width: 25%; margin: 0 4% 2%; }
+.card-group>button>img { width: 100%; }
+.g-main.active { display: block;}
 
 /*********** Animated **********/
-.animated { -webkit-animation-duration: 1s; animation-duration: 1s; -webkit-animation-fill-mode: both; animation-fill-mode: both; }
+.animated { -webkit-animation-duration: .3s; animation-duration: .3s; -webkit-animation-fill-mode: both; animation-fill-mode: both; }
 .animated.infinite { -webkit-animation-iteration-count: infinite; animation-iteration-count: infinite; }
 .animated.hinge { -webkit-animation-duration: 2s; animation-duration: 2s; }
 @-webkit-keyframes pulse {
@@ -68,3 +78,12 @@ url('font/iconfont.svg#iconfont') format('svg'); /* iOS 4.1- */ }
   100% { -webkit-transform: scale3d(1, 1, 1); -ms-transform: scale3d(1, 1, 1); transform: scale3d(1, 1, 1); }
 }
 .pulse { -webkit-animation-name: pulse; animation-name: pulse; }
+@-webkit-keyframes fadeOutLeft {
+  0% { opacity: 1; }
+  100% { opacity: 0; -webkit-transform: translate3d(-100%, 0, 0); transform: translate3d(-100%, 0, 0); }
+}
+@keyframes fadeOutLeft {
+  0% { opacity: 1; }
+  100% { opacity: 0; -webkit-transform: translate3d(-100%, 0, 0); -ms-transform: translate3d(-100%, 0, 0); transform: translate3d(-100%, 0, 0); }
+}
+.fadeOutLeft { -webkit-animation-name: fadeOutLeft; animation-name: fadeOutLeft; }
