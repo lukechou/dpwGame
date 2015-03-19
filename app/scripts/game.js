@@ -1,4 +1,4 @@
-var dpwGame = (function() {
+var dpwGame = (function () {
   'use strict';
 
   function dpwGame(args) {
@@ -11,43 +11,62 @@ var dpwGame = (function() {
 
   /*
    * name  类名
-   * status  游戏状态 0-未开始 1-进行中 2-结束
+   * status  游戏状态 0-未开始 1-进行中 2-结束 4-暂停
    * issue  问题数据
    * version 版本号
    * onInit  初始化回调
    * gameType  游戏类型
-   * itemIndex  题目索引+
+   * dtzId  本次挑战的唯一id
+   * startTime  服务端返回的开始时戳
+   * endTime  服务器端结束时间戳
+   * itemIndex  题目索引
    * awGroup  答案标题
    * colorGroup  花色对应字体图标
    * cardGroup  扑克对应字体图标
    * errorCount  答错的题目
    * trueCount  答对的题目
-   * maxItemLen  最多多少条题目
    * key  md5密钥
+   * onGameOver  游戏结束回调
+   * url  api接口
+   * errorTimtOut  答错题目时间限制
+   * missTime  服务器与前端时间误差
+   * limitItem  限题数目
    *
    */
   dpwGame.prototype = {
     'name': '\u5FB7\u6251\u738B\u724C\u578B\u5927\u6311\u6218',
     'status': 0,
-    'issue': null,
+    'issue': [],
     'version': '0.0.1',
     'onInit': null,
     'gameType': null,
     'dtzId': null,
     'startTime': null,
-    'correct': 0,
-    'fault': 0,
+    'endTime': null,
     'itemIndex': 0,
     'awGroup': ['', '皇家同花顺', '同花顺', '金刚', '葫芦', '同花', '顺子', '三条', '两对', '一对', '高牌'],
     'colorGroup': ['', '&#xe60e;', '&#xe60d;', '&#xe610;', '&#xe60f;'],
     'cardGroup': ['', '', '&#xe600;', '&#xe601;', '&#xe602;', '&#xe603;', '&#xe604;', '&#xe605;', '&#xe606;', '&#xe607;', '&#xe608;', '&#xe609;', '&#xe60a;', '&#xe60b;', '&#xe60c;'],
     'errorCount': 0,
     'trueCount': 0,
-    'maxItemLen': 50,
-    'key': '4008-898-310-POKER-IOS'
+    'key': '4008-898-310-POKER-IOS',
+    'onGameOver': null,
+    'url': 'http://poker.yuncai.com/Api/Http/index.php',
+    'errorTimtOut': 50,
+    'missTime': 0,
+    'limitItem': 50,
+    'fps': 1000 / 60,
+    'onRestart': null
   };
 
-  dpwGame.prototype.init = function() {
+  //游戏初始化
+  dpwGame.prototype.init = function (args) {
+    if (args) {
+      for (var p in args) {
+        this[p] = args[p];
+      }
+    }
+
     var _this = this;
     _this.getIssue();
     if (_this.onInit) {
@@ -55,53 +74,201 @@ var dpwGame = (function() {
     }
   };
 
+  dpwGame.prototype.restart = function () {
 
-  dpwGame.prototype.gameOver = function() {
-
-  }
-
-  //获取一条问题
-  dpwGame.prototype.getOneQuestion = function() {
     var _this = this;
+    _this.status = 0;
+    _this.issue = null;
+    _this.dtzId = null;
+    _this.startTime = null;
+    _this.endTime = null;
 
-    if (_this.maxItemLen <= _this.itemIndex) {
-      _this.gameOver();
-    } else {
-      _this.getItemCard();
-      _this.getAwGroup();
+    $('#j-left-g').html('<i class="iconfont">&#xe613;</i>');
+    $('#j-left-r').html('<i class="iconfont">&#xe613;</i>');
+    $('#j-limit').html('<i class="iconfont">&#xe604;</i><i class="iconfont">&#xe613;</i><i class="iconfont small">&#xe604;</i><i class="iconfont small">&#xe613;</i>');
+    $('#j-ti').html('<i class="iconfont">&#xe613;</i><i class="iconfont">&#xe613;</i><span>:</span><i class="iconfont">&#xe613;</i><i class="iconfont">&#xe613;</i><div class="ml"><i class="iconfont small">&#xe613;</i><i class="iconfont small">&#xe613;</i>');
+
+    if (_this.onRestart) {
+      _this.onRestart();
     }
 
+    _this.getIssue();
+    _this.start();
+
+  };
+
+  // 游戏结束
+  dpwGame.prototype.gameOver = function () {
+
+    var _this = this;
+    var now = (new Date().getTime() / 1000).toFixed(0);
+
+    if (_this.gameType == 2) {
+      clearInterval(_this.tiIntervel);
+    }
+
+    now = Number(now) + _this.missTime;
+    _this.endTime = now;
+
+    // lock game status
+    _this.status = 2;
+
+    var data = _this.createApiObj({
+      mod: 'webapp',
+      op: 'achieveScore',
+      dtz_id: _this.dtzId,
+      end_time: now,
+      correct: _this.trueCount,
+      fault: _this.errorCount
+    });
+
+    $.ajax({
+      url: _this.url,
+      type: 'get',
+      dataType: 'text',
+      data: data,
+      success: function (data) {
+        var obj = _this.parseApiData(data);
+        if (obj.retCode === 100000 && obj.md5Status) {
+          //更新排名 和 时间
+          $('#j-rank').html(obj.retData.rank_ratio);
+          $('#j-rank-time').html(_this.endTime - _this.startTime);
+
+          if (_this.onGameOver) {
+            _this.onGameOver();
+          }
+
+        } else {
+          alert(obj.retMsg);
+        }
+      }
+    });
+
+  };
+
+  //获取一条问题
+  dpwGame.prototype.getOneQuestion = function () {
+
+    var _this = this;
+
+    if (_this.gameType == 2 && _this.trueCount == _this.limitItem) {
+      _this.gameOver();
+      return;
+    }
+
+    if (_this.status === 1 || _this.status === 4) {
+      _this.getItemCard();
+      _this.getAwGroup();
+    } else {
+      return;
+    }
+
+  };
+
+  //获取游戏是否达到结束状态
+  dpwGame.prototype.getGameOverStatus = function () {
+
+    var _this = this;
+    var overStatus = false;
+
+    if (_this.status === 2) {
+      overStatus = true;
+    }
+
+    if (_this.gameType == 2 && _this.trueCount == _this.limitItem) {
+      overStatus = true;
+    }
+
+    return overStatus;
+
+  };
+
+  dpwGame.prototype.getNewFontNum = function (num, newClass) {
+
+    var str = [];
+    var s = newClass || '';
+    var fu = ['&#xe613;', '&#xe612;', '&#xe600;', '&#xe601;', '&#xe602;', '&#xe603;', '&#xe604;', '&#xe605;', '&#xe606;', '&#xe607;'];
+    var strArr = num.toString().split('');
+
+    for (var i = 0; i < strArr.length; i++) {
+      str.push('<i class="iconfont ' + s + '">' + fu[strArr[i]] + '</i>');
+    };
+
+    return str.join('');
+
+  };
+
+  //更新左侧答题数据
+  dpwGame.prototype.updateLeftbox = function (type, count) {
+
+    var _this = this;
+    var h = _this.getNewFontNum(count);
+
+    if (type) {
+      $('#j-left-r').html(h);
+    } else {
+      $('#j-left-g').html(h);
+    }
 
   };
 
   //回答问题
-  dpwGame.prototype.answerItem = function(aw, btn) {
+  dpwGame.prototype.answerItem = function (aw, btn) {
+
     var _this = this;
+    var nextQuestionSeconds = 200;
+
+    if (_this.status === 4) {
+      return;
+    }
+
+    var isGameOver = _this.getGameOverStatus();
+
+    if (isGameOver) {
+      return;
+    }
+
     var rightAw = _this.issue[_this.itemIndex].aw;
 
+    //暂停点击事件
+    _this.status = 4;
+
+    //更新 题目索引 答对 答错题目
     _this.itemIndex++;
 
+    btn.addClass('active');
     if (aw === rightAw) {
       btn.find('img').attr('src', 'images/btn-g.png');
       _this.trueCount++;
+      _this.updateLeftbox(0, _this.trueCount);
     } else {
       btn.find('img').attr('src', 'images/btn-r.png');
+      nextQuestionSeconds = _this.errorTimtOut;
       _this.errorCount++;
+      _this.updateLeftbox(1, _this.errorCount);
     }
 
-    setTimeout(function() {
+    //获取更多
+    if (_this.itemIndex > (_this.issue.length - 10)) {
+      _this.getIssue();
+    }
+
+    // 重新 获取新的题目
+    setTimeout(function () {
       _this.getOneQuestion();
-    }, 200);
+      _this.status = 1;
+    }, nextQuestionSeconds);
 
   };
 
   //渲染扑克
-  dpwGame.prototype.getItemCard = function() {
+  dpwGame.prototype.getItemCard = function () {
 
     var _this = this;
     var qsArr = null;
     var qs = null;
     var arr = [];
+    var arr2 = [];
     var isRed = '';
 
     for (var i = 1; i < 8; i++) {
@@ -116,18 +283,21 @@ var dpwGame = (function() {
 
       qs = '<span class="card ' + isRed + '"><i class="iconfont">' + _this.cardGroup[qsArr[1]] + '</i><i class="iconfont">' + _this.colorGroup[qsArr[0]] + '</i></span>';
 
-      arr.push(qs);
+      if (i < 6) {
+        arr.push(qs);
+      } else {
+        arr2.push(qs);
+      }
 
     };
 
     $('#j-game-card').html(arr.join(''));
-
-
+    $('#j-game-mycard').html(arr2.join(''));
 
   };
 
   //渲染答案
-  dpwGame.prototype.getAwGroup = function() {
+  dpwGame.prototype.getAwGroup = function () {
 
     var _this = this;
     var awText = null;
@@ -141,30 +311,177 @@ var dpwGame = (function() {
       aw = _this.awGroup[awIndex];
       arr.push('<button data-aw="' + awIndex + '"><img src="images/btn-y.png" alt="btn-y"><span>' + aw + '</span></button>');
     };
+    arr.sort(function () {
+      return 0.5 - Math.random()
+    });
 
     $('#j-card-group').html(arr.join(''));
 
   };
 
-  dpwGame.prototype.start = function(type) {
+  //创建API
+  dpwGame.prototype.createApiObj = function (args) {
+
+    var _this = this;
+    var obj = {};
+    for (var key in args) {
+      if (args.hasOwnProperty(key)) {
+        obj[key] = args[key];
+      }
+    }
+    var appKey = _this.getAppKey(_this.url, obj) || 0;
+    obj['app_key'] = appKey;
+
+    return obj;
+  };
+
+  //游戏限题模式
+  dpwGame.prototype.tiTypeGame = function () {
 
     var _this = this;
 
-    if (_this.issue && _this.status === 0) {
+    $('#j-ti').addClass('active');
+    $('#j-limit').removeClass('active');
+    var sTime = new Date().getTime();
 
-      _this.getOneQuestion();
-      $('.j-game-rm').addClass('fadeOutLeft');
-      $('#j-game-main').addClass('active');
+    _this.tiIntervel = setInterval(function () {
 
-    } else {
+      var html = '';
+      var t = null;
+      var t1 = null;
+      var t2 = null;
+      var t3 = null;
+      var now = new Date().getTime();
+      t = Number(now) - Number(sTime);
+      t1 = Number((t / 1000 / 60).toFixed(0));
+      t2 = Number((t / 1000 % 60).toFixed(0));
+      t3 = (t / 100).toFixed(2).split('.')[1];
 
+      if (t1 < 10) {
+        t1 = '0' + t1;
+      }
+
+      if (t2 < 10) {
+        t2 = '0' + t2;
+      }
+
+      html = _this.getNewFontNum(t1) + '<span>:</span>' + _this.getNewFontNum(t2) + '<div class="ml">' + _this.getNewFontNum(t3, 'small') + '</div>'
+      $('#j-ti').html(html);
+
+    }, _this.fps);
+  };
+
+  // 游戏限时模式
+  dpwGame.prototype.limitTypeGame = function () {
+
+    var _this = this;
+    var outTime = 60000;
+    var endTime = new Date().getTime() + outTime;
+    var limitEl = $('#j-limit');
+
+    $('#j-ti').removeClass('active');
+    limitEl.addClass('active');
+
+    _this.limitTime = setInterval(function () {
+
+      var now = new Date().getTime();
+      var t = ((endTime - now) / 1000).toFixed(0);
+
+      if (t > 0) {
+        var newNum = ((endTime - now) / 1000).toFixed(2);
+        var arr = newNum.split('.');
+        limitEl.html(_this.getNewFontNum(arr[0]) + ' ' + _this.getNewFontNum(arr[1], 'small'));
+      } else {
+        clearInterval(_this.limitTime);
+      }
+
+    }, _this.fps);
+
+    // timeout control
+    setTimeout(function () {
+
+      limitEl.html(0);
+      _this.gameOver();
       return;
 
-    }
+    }, outTime);
 
   };
 
-  dpwGame.prototype.checkMd5 = function(md5Str, str) {
+  // 游戏开始
+  dpwGame.prototype.start = function (type) {
+
+    var _this = this;
+    var now = Number((new Date().getTime() / 1000).toFixed(0));
+
+    _this.gameType = Number(type);
+
+    // game_type 1-限时模式 2-限题模式
+    var data = _this.createApiObj({
+      mod: 'webapp',
+      op: 'startAnswer',
+      game_type: _this.gameType
+    });
+
+    $.ajax({
+      url: _this.url,
+      type: 'get',
+      dataType: 'text',
+      data: data,
+      success: function (data) {
+        var obj = _this.parseApiData(data);
+
+        if (obj.retCode === 100000 && obj.md5Status) {
+
+          _this.dtzId = obj.retData['dtz_id'];
+          //计算服务器与前端时间误差
+          _this.startTime = obj.retData['start_time'];
+
+          if (now > _this.startTime) {
+            _this.missTime = -(now - _this.startTime);
+          } else {
+            _this.missTime = _this.startTime - now;
+          }
+
+          // 游戏状态判断
+          if (_this.issue && _this.status === 0) {
+
+            //更新游戏状态 获取问题
+            _this.status = 1;
+            _this.getOneQuestion();
+
+            //渲染ui
+            $('.j-game-rm').addClass('fadeOutLeft');
+            $('#j-game-main').addClass('active');
+
+            //添加 限时模式时间判断
+            if (_this.gameType === 1) {
+              _this.limitTypeGame();
+            }
+
+            if (_this.gameType === 2) {
+              _this.tiTypeGame();
+            }
+
+          } else {
+
+            return;
+
+          }
+
+        } else {
+          alert(data.retMsg);
+        }
+      },
+      error: function () {
+
+      }
+    })
+
+  };
+
+  //检测md5
+  dpwGame.prototype.checkMd5 = function (md5Str, str) {
 
     var _this = this;
     var hash = md5(str + _this.key);
@@ -176,652 +493,72 @@ var dpwGame = (function() {
     }
   };
 
-  dpwGame.prototype.getIssue = function(args) {
+  // 获取APPkey
+  dpwGame.prototype.getAppKey = function (url, data) {
+    var _this = this;
+    var arr = [];
+    for (var key in data) {
+      if (data.hasOwnProperty(key)) {
+        arr.push(key + '=' + data[key]);
+      }
+    }
+    var str = url + '?' + arr.join('&') + _this.key;
+    var hash = md5(str).toUpperCase();
+    return hash;
+  };
+
+  //解析ApiData
+  dpwGame.prototype.parseApiData = function (data) {
 
     var _this = this;
-    var now = new Date().getTime();
-    var data = {
+
+    if (data) {
+      var index = data.indexOf('{');
+      var md5Str = data.slice(0, index);
+      var objStr = data.slice(index);
+      var obj = $.parseJSON(objStr);
+      var md5Status = _this.checkMd5(md5Str, objStr);
+
+      obj['md5Status'] = md5Status;
+      return obj;
+    } else {
+      return '';
+    }
+
+  };
+
+  //获取题目
+  dpwGame.prototype.getIssue = function (args) {
+
+    var _this = this;
+
+    var data = _this.createApiObj({
       mod: 'webapp',
       op: 'requestExercise'
-    };
+    });
 
-    // $.ajax({
-    //   url: 'http://poker.yuncai.com/Api/Http/index.php',
-    //   type: 'get',
-    //   dataType: 'text',
-    //   data: data,
-    //   success: function (data) {
-    //     var index = data.indexOf('{');
-    //     var md5Str = data.slice(0, index);
-    //     var objStr = data.slice(index);
-    //     var obj = $.parseJSON(objStr);
-    //     var md5Status = _this.checkMd5(md5Str, objStr);
+    $.ajax({
+      url: _this.url,
+      type: 'get',
+      dataType: 'text',
+      data: data,
+      success: function (data) {
 
-    //     if (md5Status) {
-    //       if (obj.retCode === 100000) {
-    //         _this.issue = obj.retData;
-    //       } else {
-    //         alert(obj.retMsg);
-    //       }
-    //     } else {
-    //       alert('Some things error!');
-    //     }
+        var obj = _this.parseApiData(data);
 
-    //   },
-    //   error: function () {
+        if (obj.retCode === 100000 && obj.md5Status) {
 
+          _this.issue = _this.issue.concat(obj.retData);
 
+        } else {
+          alert(obj.retMsg);
+        }
 
-    //   }
-    // });
+      },
+      error: function () {
 
-    var data = {
-      "retCode": 100000,
-      "retMsg": "",
-      "retData": [{
-        "c1": ["2", "8"],
-        "c2": ["2", "7"],
-        "c3": ["4", "8"],
-        "c4": ["3", "11"],
-        "c5": ["2", "2"],
-        "c6": ["4", "6"],
-        "c7": ["4", "13"],
-        "r1": 8,
-        "r2": 9,
-        "r3": 5,
-        "aw": 9
-      }, {
-        "c1": ["3", "14"],
-        "c2": ["3", "9"],
-        "c3": ["2", "11"],
-        "c4": ["4", "11"],
-        "c5": ["4", "13"],
-        "c6": ["4", "10"],
-        "c7": ["2", "5"],
-        "r1": 5,
-        "r2": 6,
-        "r3": 9,
-        "aw": 9
-      }, {
-        "c1": ["4", "5"],
-        "c2": ["2", "8"],
-        "c3": ["3", "10"],
-        "c4": ["2", "6"],
-        "c5": ["4", "7"],
-        "c6": ["1", "4"],
-        "c7": ["2", "14"],
-        "r1": 10,
-        "r2": 4,
-        "r3": 6,
-        "aw": 6
-      }, {
-        "c1": ["3", "3"],
-        "c2": ["2", "5"],
-        "c3": ["4", "11"],
-        "c4": ["4", "2"],
-        "c5": ["3", "4"],
-        "c6": ["3", "14"],
-        "c7": ["1", "11"],
-        "r1": 6,
-        "r2": 9,
-        "r3": 8,
-        "aw": 6
-      }, {
-        "c1": ["2", "14"],
-        "c2": ["1", "4"],
-        "c3": ["4", "10"],
-        "c4": ["4", "14"],
-        "c5": ["4", "12"],
-        "c6": ["4", "13"],
-        "c7": ["4", "11"],
-        "r1": 6,
-        "r2": 10,
-        "r3": 1,
-        "aw": 1
-      }, {
-        "c1": ["3", "9"],
-        "c2": ["4", "6"],
-        "c3": ["4", "9"],
-        "c4": ["1", "9"],
-        "c5": ["2", "5"],
-        "c6": ["4", "10"],
-        "c7": ["4", "7"],
-        "r1": 3,
-        "r2": 7,
-        "r3": 1,
-        "aw": 7
-      }, {
-        "c1": ["1", "3"],
-        "c2": ["2", "13"],
-        "c3": ["3", "14"],
-        "c4": ["4", "14"],
-        "c5": ["1", "6"],
-        "c6": ["4", "8"],
-        "c7": ["1", "13"],
-        "r1": 5,
-        "r2": 4,
-        "r3": 8,
-        "aw": 8
-      }, {
-        "c1": ["2", "14"],
-        "c2": ["2", "13"],
-        "c3": ["1", "3"],
-        "c4": ["1", "14"],
-        "c5": ["4", "14"],
-        "c6": ["4", "8"],
-        "c7": ["3", "14"],
-        "r1": 2,
-        "r2": 3,
-        "r3": 5,
-        "aw": 3
-      }, {
-        "c1": ["3", "12"],
-        "c2": ["4", "11"],
-        "c3": ["3", "7"],
-        "c4": ["1", "3"],
-        "c5": ["3", "5"],
-        "c6": ["2", "12"],
-        "c7": ["1", "7"],
-        "r1": 8,
-        "r2": 4,
-        "r3": 10,
-        "aw": 8
-      }, {
-        "c1": ["4", "13"],
-        "c2": ["1", "10"],
-        "c3": ["2", "3"],
-        "c4": ["1", "12"],
-        "c5": ["1", "9"],
-        "c6": ["1", "13"],
-        "c7": ["1", "11"],
-        "r1": 9,
-        "r2": 8,
-        "r3": 2,
-        "aw": 2
-      }, {
-        "c1": ["1", "10"],
-        "c2": ["2", "9"],
-        "c3": ["3", "9"],
-        "c4": ["3", "13"],
-        "c5": ["4", "6"],
-        "c6": ["1", "13"],
-        "c7": ["4", "9"],
-        "r1": 7,
-        "r2": 4,
-        "r3": 9,
-        "aw": 4
-      }, {
-        "c1": ["2", "11"],
-        "c2": ["3", "10"],
-        "c3": ["4", "13"],
-        "c4": ["3", "14"],
-        "c5": ["1", "12"],
-        "c6": ["2", "9"],
-        "c7": ["1", "11"],
-        "r1": 7,
-        "r2": 6,
-        "r3": 5,
-        "aw": 6
-      }, {
-        "c1": ["3", "7"],
-        "c2": ["4", "3"],
-        "c3": ["4", "11"],
-        "c4": ["1", "7"],
-        "c5": ["1", "10"],
-        "c6": ["4", "7"],
-        "c7": ["2", "2"],
-        "r1": 5,
-        "r2": 1,
-        "r3": 7,
-        "aw": 7
-      }, {
-        "c1": ["1", "13"],
-        "c2": ["4", "12"],
-        "c3": ["1", "10"],
-        "c4": ["2", "10"],
-        "c5": ["3", "10"],
-        "c6": ["3", "3"],
-        "c7": ["4", "10"],
-        "r1": 9,
-        "r2": 3,
-        "r3": 4,
-        "aw": 3
-      }, {
-        "c1": ["2", "12"],
-        "c2": ["2", "9"],
-        "c3": ["2", "13"],
-        "c4": ["2", "8"],
-        "c5": ["4", "11"],
-        "c6": ["2", "2"],
-        "c7": ["3", "13"],
-        "r1": 6,
-        "r2": 5,
-        "r3": 2,
-        "aw": 5
-      }, {
-        "c1": ["3", "6"],
-        "c2": ["4", "8"],
-        "c3": ["4", "7"],
-        "c4": ["1", "3"],
-        "c5": ["1", "9"],
-        "c6": ["4", "4"],
-        "c7": ["2", "10"],
-        "r1": 3,
-        "r2": 6,
-        "r3": 7,
-        "aw": 6
-      }, {
-        "c1": ["1", "4"],
-        "c2": ["4", "5"],
-        "c3": ["4", "10"],
-        "c4": ["2", "9"],
-        "c5": ["2", "6"],
-        "c6": ["2", "2"],
-        "c7": ["2", "3"],
-        "r1": 4,
-        "r2": 6,
-        "r3": 5,
-        "aw": 6
-      }, {
-        "c1": ["3", "11"],
-        "c2": ["4", "5"],
-        "c3": ["1", "11"],
-        "c4": ["2", "11"],
-        "c5": ["3", "9"],
-        "c6": ["4", "3"],
-        "c7": ["4", "11"],
-        "r1": 3,
-        "r2": 6,
-        "r3": 10,
-        "aw": 3
-      }, {
-        "c1": ["2", "6"],
-        "c2": ["1", "5"],
-        "c3": ["1", "3"],
-        "c4": ["1", "7"],
-        "c5": ["4", "12"],
-        "c6": ["1", "6"],
-        "c7": ["1", "4"],
-        "r1": 5,
-        "r2": 2,
-        "r3": 10,
-        "aw": 2
-      }, {
-        "c1": ["4", "5"],
-        "c2": ["1", "14"],
-        "c3": ["3", "7"],
-        "c4": ["1", "9"],
-        "c5": ["4", "6"],
-        "c6": ["1", "8"],
-        "c7": ["1", "13"],
-        "r1": 6,
-        "r2": 10,
-        "r3": 2,
-        "aw": 6
-      }, {
-        "c1": ["4", "2"],
-        "c2": ["1", "10"],
-        "c3": ["2", "3"],
-        "c4": ["4", "5"],
-        "c5": ["1", "2"],
-        "c6": ["2", "9"],
-        "c7": ["3", "2"],
-        "r1": 7,
-        "r2": 4,
-        "r3": 8,
-        "aw": 7
-      }, {
-        "c1": ["2", "12"],
-        "c2": ["1", "11"],
-        "c3": ["2", "3"],
-        "c4": ["2", "2"],
-        "c5": ["2", "8"],
-        "c6": ["1", "10"],
-        "c7": ["2", "7"],
-        "r1": 5,
-        "r2": 10,
-        "r3": 1,
-        "aw": 5
-      }, {
-        "c1": ["1", "8"],
-        "c2": ["3", "6"],
-        "c3": ["1", "11"],
-        "c4": ["1", "4"],
-        "c5": ["2", "7"],
-        "c6": ["3", "8"],
-        "c7": ["2", "8"],
-        "r1": 7,
-        "r2": 5,
-        "r3": 1,
-        "aw": 7
-      }, {
-        "c1": ["3", "12"],
-        "c2": ["2", "3"],
-        "c3": ["2", "12"],
-        "c4": ["1", "4"],
-        "c5": ["1", "11"],
-        "c6": ["1", "8"],
-        "c7": ["3", "13"],
-        "r1": 10,
-        "r2": 1,
-        "r3": 9,
-        "aw": 9
-      }, {
-        "c1": ["4", "8"],
-        "c2": ["1", "7"],
-        "c3": ["2", "13"],
-        "c4": ["2", "9"],
-        "c5": ["2", "6"],
-        "c6": ["3", "7"],
-        "c7": ["3", "2"],
-        "r1": 3,
-        "r2": 2,
-        "r3": 9,
-        "aw": 9
-      }, {
-        "c1": ["3", "8"],
-        "c2": ["4", "11"],
-        "c3": ["1", "13"],
-        "c4": ["3", "9"],
-        "c5": ["2", "14"],
-        "c6": ["2", "3"],
-        "c7": ["4", "8"],
-        "r1": 9,
-        "r2": 8,
-        "r3": 4,
-        "aw": 9
-      }, {
-        "c1": ["1", "6"],
-        "c2": ["1", "5"],
-        "c3": ["2", "8"],
-        "c4": ["1", "11"],
-        "c5": ["1", "9"],
-        "c6": ["1", "10"],
-        "c7": ["1", "8"],
-        "r1": 8,
-        "r2": 5,
-        "r3": 6,
-        "aw": 5
-      }, {
-        "c1": ["4", "9"],
-        "c2": ["1", "2"],
-        "c3": ["1", "6"],
-        "c4": ["2", "4"],
-        "c5": ["2", "6"],
-        "c6": ["4", "7"],
-        "c7": ["3", "12"],
-        "r1": 5,
-        "r2": 9,
-        "r3": 1,
-        "aw": 9
-      }, {
-        "c1": ["2", "11"],
-        "c2": ["1", "6"],
-        "c3": ["4", "11"],
-        "c4": ["3", "11"],
-        "c5": ["1", "8"],
-        "c6": ["1", "11"],
-        "c7": ["4", "10"],
-        "r1": 3,
-        "r2": 8,
-        "r3": 7,
-        "aw": 3
-      }, {
-        "c1": ["3", "8"],
-        "c2": ["3", "6"],
-        "c3": ["4", "2"],
-        "c4": ["2", "11"],
-        "c5": ["1", "11"],
-        "c6": ["2", "6"],
-        "c7": ["1", "6"],
-        "r1": 5,
-        "r2": 4,
-        "r3": 10,
-        "aw": 4
-      }, {
-        "c1": ["4", "6"],
-        "c2": ["4", "8"],
-        "c3": ["3", "3"],
-        "c4": ["1", "14"],
-        "c5": ["4", "11"],
-        "c6": ["1", "3"],
-        "c7": ["4", "9"],
-        "r1": 5,
-        "r2": 6,
-        "r3": 9,
-        "aw": 9
-      }, {
-        "c1": ["4", "10"],
-        "c2": ["2", "11"],
-        "c3": ["2", "8"],
-        "c4": ["3", "11"],
-        "c5": ["1", "10"],
-        "c6": ["4", "11"],
-        "c7": ["1", "3"],
-        "r1": 4,
-        "r2": 6,
-        "r3": 2,
-        "aw": 4
-      }, {
-        "c1": ["1", "9"],
-        "c2": ["3", "12"],
-        "c3": ["2", "10"],
-        "c4": ["3", "11"],
-        "c5": ["1", "11"],
-        "c6": ["4", "14"],
-        "c7": ["2", "13"],
-        "r1": 6,
-        "r2": 10,
-        "r3": 5,
-        "aw": 6
-      }, {
-        "c1": ["1", "4"],
-        "c2": ["1", "14"],
-        "c3": ["2", "5"],
-        "c4": ["2", "3"],
-        "c5": ["3", "2"],
-        "c6": ["3", "4"],
-        "c7": ["4", "11"],
-        "r1": 7,
-        "r2": 6,
-        "r3": 4,
-        "aw": 6
-      }, {
-        "c1": ["4", "7"],
-        "c2": ["4", "13"],
-        "c3": ["4", "11"],
-        "c4": ["2", "2"],
-        "c5": ["4", "8"],
-        "c6": ["1", "3"],
-        "c7": ["4", "4"],
-        "r1": 2,
-        "r2": 5,
-        "r3": 9,
-        "aw": 5
-      }, {
-        "c1": ["4", "14"],
-        "c2": ["1", "11"],
-        "c3": ["1", "13"],
-        "c4": ["1", "12"],
-        "c5": ["1", "2"],
-        "c6": ["1", "5"],
-        "c7": ["4", "5"],
-        "r1": 5,
-        "r2": 9,
-        "r3": 10,
-        "aw": 5
-      }, {
-        "c1": ["1", "12"],
-        "c2": ["2", "10"],
-        "c3": ["1", "11"],
-        "c4": ["1", "14"],
-        "c5": ["3", "4"],
-        "c6": ["1", "13"],
-        "c7": ["1", "10"],
-        "r1": 1,
-        "r2": 5,
-        "r3": 4,
-        "aw": 1
-      }, {
-        "c1": ["1", "6"],
-        "c2": ["1", "5"],
-        "c3": ["4", "7"],
-        "c4": ["4", "3"],
-        "c5": ["4", "4"],
-        "c6": ["2", "11"],
-        "c7": ["3", "11"],
-        "r1": 6,
-        "r2": 9,
-        "r3": 5,
-        "aw": 6
-      }, {
-        "c1": ["1", "11"],
-        "c2": ["1", "10"],
-        "c3": ["1", "12"],
-        "c4": ["1", "4"],
-        "c5": ["4", "10"],
-        "c6": ["1", "14"],
-        "c7": ["1", "13"],
-        "r1": 3,
-        "r2": 10,
-        "r3": 1,
-        "aw": 1
-      }, {
-        "c1": ["4", "9"],
-        "c2": ["4", "2"],
-        "c3": ["4", "5"],
-        "c4": ["4", "11"],
-        "c5": ["1", "7"],
-        "c6": ["2", "9"],
-        "c7": ["4", "10"],
-        "r1": 5,
-        "r2": 10,
-        "r3": 2,
-        "aw": 5
-      }, {
-        "c1": ["3", "11"],
-        "c2": ["2", "7"],
-        "c3": ["2", "2"],
-        "c4": ["2", "8"],
-        "c5": ["4", "13"],
-        "c6": ["3", "12"],
-        "c7": ["4", "9"],
-        "r1": 2,
-        "r2": 8,
-        "r3": 10,
-        "aw": 10
-      }, {
-        "c1": ["1", "3"],
-        "c2": ["2", "4"],
-        "c3": ["1", "7"],
-        "c4": ["3", "14"],
-        "c5": ["4", "12"],
-        "c6": ["1", "2"],
-        "c7": ["1", "13"],
-        "r1": 9,
-        "r2": 10,
-        "r3": 1,
-        "aw": 10
-      }, {
-        "c1": ["4", "13"],
-        "c2": ["1", "5"],
-        "c3": ["4", "9"],
-        "c4": ["1", "14"],
-        "c5": ["1", "3"],
-        "c6": ["1", "4"],
-        "c7": ["1", "2"],
-        "r1": 1,
-        "r2": 2,
-        "r3": 5,
-        "aw": 2
-      }, {
-        "c1": ["3", "12"],
-        "c2": ["4", "6"],
-        "c3": ["3", "10"],
-        "c4": ["4", "5"],
-        "c5": ["2", "5"],
-        "c6": ["2", "4"],
-        "c7": ["3", "4"],
-        "r1": 8,
-        "r2": 1,
-        "r3": 5,
-        "aw": 8
-      }, {
-        "c1": ["4", "7"],
-        "c2": ["2", "8"],
-        "c3": ["1", "11"],
-        "c4": ["3", "10"],
-        "c5": ["3", "14"],
-        "c6": ["2", "9"],
-        "c7": ["4", "10"],
-        "r1": 8,
-        "r2": 5,
-        "r3": 6,
-        "aw": 6
-      }, {
-        "c1": ["3", "13"],
-        "c2": ["3", "2"],
-        "c3": ["1", "3"],
-        "c4": ["1", "10"],
-        "c5": ["4", "14"],
-        "c6": ["3", "8"],
-        "c7": ["3", "11"],
-        "r1": 6,
-        "r2": 1,
-        "r3": 10,
-        "aw": 10
-      }, {
-        "c1": ["2", "13"],
-        "c2": ["2", "2"],
-        "c3": ["2", "5"],
-        "c4": ["2", "14"],
-        "c5": ["1", "7"],
-        "c6": ["3", "12"],
-        "c7": ["2", "3"],
-        "r1": 5,
-        "r2": 8,
-        "r3": 3,
-        "aw": 5
-      }, {
-        "c1": ["2", "6"],
-        "c2": ["1", "2"],
-        "c3": ["3", "3"],
-        "c4": ["1", "10"],
-        "c5": ["1", "8"],
-        "c6": ["2", "11"],
-        "c7": ["3", "10"],
-        "r1": 1,
-        "r2": 9,
-        "r3": 2,
-        "aw": 9
-      }, {
-        "c1": ["1", "3"],
-        "c2": ["3", "12"],
-        "c3": ["2", "12"],
-        "c4": ["2", "14"],
-        "c5": ["3", "3"],
-        "c6": ["3", "14"],
-        "c7": ["2", "13"],
-        "r1": 6,
-        "r2": 7,
-        "r3": 8,
-        "aw": 8
-      }, {
-        "c1": ["1", "9"],
-        "c2": ["1", "2"],
-        "c3": ["1", "10"],
-        "c4": ["3", "12"],
-        "c5": ["2", "7"],
-        "c6": ["4", "6"],
-        "c7": ["1", "5"],
-        "r1": 7,
-        "r2": 10,
-        "r3": 8,
-        "aw": 10
-      }]
-    };
-
-    _this.issue = data.retData;
+      }
+    });
 
   };
 

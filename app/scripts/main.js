@@ -117,7 +117,16 @@ window.addEventListener('DOMContentLoaded', function () {
   });
 
   var game = new dpwGame();
-  game.init();
+  game.init({
+    onGameOver: function () {
+      Mask.type = 0;
+      Mask.toggleMask(0, 1);
+    },
+    onRestart: function () {
+      Mask.type = 0;
+      Mask.toggleMask(0, 0);
+    }
+  });
 
   // add btn event
   $('.j-game-start').on('touchstart', function (event) {
@@ -125,15 +134,17 @@ window.addEventListener('DOMContentLoaded', function () {
     game.start(gameType);
   });
 
-  $('#j-card-group').on('touchstart', 'button', function(event) {
+  $('#j-card-group').on('touchstart', 'button', function (event) {
     event.preventDefault();
-    var aw = Number($(this).attr('data-aw'))||0;
-    game.answerItem(aw,$(this));
+    var aw = Number($(this).attr('data-aw')) || 0;
+    game.answerItem(aw, $(this));
 
   });
 
-
-
+  $('#j-game-restart').on('touchstart', function (event) {
+    event.preventDefault();
+    game.restart();
+  });
 
 });
 

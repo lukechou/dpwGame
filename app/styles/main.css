@@ -18,11 +18,11 @@ body, .preload { background: rgb(69, 72, 77); /* Old browsers */ background: -mo
 .g-bg { width: 100%; }
 .g-bottom { height: 500px; }
 .g-table { position: absolute; top: 5%; right: 0; left: 0; width: 96%; margin: auto; }
-.g-help { position: absolute; top: 27%; left: 0; right: 0; margin: auto; width: 73%; }
-.g-card { position: absolute; right: 3%; bottom: 3%; width: 14%; -webkit-transition: .2s .5s; transition: .2s .5s; }
-.g-card.active { -webkit-transform: translateX(100%); transform: translateX(100%); opacity: 0; }
+.g-help { position: absolute; top: 27%; right: 0; left: 0; width: 73%; margin: auto; }
+.g-card { position: absolute; right: 3%; bottom: 3%; width: 14%; -webkit-transition: .3s .5s; transition: .3s .5s; }
+.g-card.active { -webkit-transform: translateX(100%) rotate(360deg); transform: translateX(100%) rotate(360deg); opacity: 0; }
 .g-bl-card { position: absolute; bottom: 0; left: 0; width: 33%; }
-.btn-group { position: absolute; bottom: 8%; }
+.btn-group { position: absolute; bottom: 8%; width: 100%; }
 .btn-g1, .btn-g2 { display: block; width: 52%; margin: 0 auto 10px; }
 
 /* 牌型介绍 */
@@ -59,11 +59,37 @@ body, .preload { background: rgb(69, 72, 77); /* Old browsers */ background: -mo
 .g-main { display: none; -webkit-transition: .2s .3s; transition: .2s .3s; }
 .bg-bottom { position: absolute; bottom: 0; left: 0; width: 100%; }
 .card-group { position: absolute; bottom: 0; width: 100%; }
-.card-group>button { float: left; border: none; background: transparent; width: 25%; margin: 0 4% 2%; position: relative; }
-.card-group>button>img { width: 100%; }
-.card-group>button>span { width: 16px; font-size: 1.6rem; position: absolute; top: 50%; left: 0; right: 0; margin: auto; -webkit-transform: translateY(-50%); transform: translateY(-50%); }
-.game-card { position: absolute; top: 50%;}
+.card-group > button { position: relative; float: left; width: 29%; margin: 0 2% 2%; border: none; background: transparent; color: #3d2200; font-weight: bold; }
+.card-group > button.active { color: #f5f7a3 }
+.card-group > button > img { width: 100%; }
+.card-group > button > span { font-size: 1.6rem; line-height: 1; position: absolute; top: 47%; right: 0; left: 0; width: 16px; margin: auto; -webkit-transform: translateY(-50%); transform: translateY(-50%); }
+.game-card { position: absolute; top: 30%; right: 0; left: 0; margin: auto; width: 75%; }
+.game-card .card { width: 18%; margin: 0 1%; padding: 4px 0; }
+.game-card .card .iconfont { font-size: 3rem; }
 .g-main.active { display: block; }
+.game-mycard { width: 32%; top: 68%; }
+.game-mycard .card { width: 46%; margin: 0 2%; }
+.match-box { position: absolute; bottom: 25%; display: none; color: #a84621; background: url(../images/box.png) no-repeat; width: 84px; height: 50px; text-align: center; background-size: 84px; font-size: 3rem; }
+.match-lbox { display: block; left: 2%; }
+.match-rbox { right: 2%; line-height: 47px; text-align: left; }
+.match-box.active { display: block; }
+.match-rbox .iconfont { margin: 0 1px; display: inline-block; width: 12px; font-size: 3rem; }
+.match-rbox .iconfont.small { font-size: 2rem; }
+.match-rbox>span { position: relative; left: 9px; top: -2px; }
+
+.match-ti .iconfont{ font-size: 2.4rem; width: 9px;}
+.match-ti>span{ left: 6px;}
+.match-ti .iconfont.small{ font-size: 2rem; width: 8px;}
+.match-ti .ml{ margin-left: 3px; display: inline-block;}
+
+/* 左侧数据统计 */
+.limit-item { width: 100%; font-size: 12px; height: 100%; padding: 3px 0; }
+.limit-item .iconfont { display: inline-block; width: 10px; padding-top: 2px; }
+.limit-item .left, .limit-item .right { width: 50%; float: left; height: 100%; text-align: center; }
+.limit-item .left { border-right: 1px #96814c solid; color: #2ebe4f; }
+.limit-item .right { border-left: 1px #96814c solid; color: #e24637; }
+.limit-item .left b, .limit-item .right b { display: block; line-height: 19px; height: 22px; }
+.limit-item .left span, .limit-item .right span { display: block; height: 22px; }
 
 /*********** Animated **********/
 .animated { -webkit-animation-duration: .3s; animation-duration: .3s; -webkit-animation-fill-mode: both; animation-fill-mode: both; }
@@ -82,10 +108,10 @@ body, .preload { background: rgb(69, 72, 77); /* Old browsers */ background: -mo
 .pulse { -webkit-animation-name: pulse; animation-name: pulse; }
 @-webkit-keyframes fadeOutLeft {
   0% { opacity: 1; }
-  100% { opacity: 0; -webkit-transform: translate3d(-100%, 0, 0); transform: translate3d(-100%, 0, 0); }
+  100% { -webkit-transform: translate3d(-100%, 0, 0); transform: translate3d(-100%, 0, 0); opacity: 0; }
 }
 @keyframes fadeOutLeft {
   0% { opacity: 1; }
-  100% { opacity: 0; -webkit-transform: translate3d(-100%, 0, 0); -ms-transform: translate3d(-100%, 0, 0); transform: translate3d(-100%, 0, 0); }
+  100% { -webkit-transform: translate3d(-100%, 0, 0); -ms-transform: translate3d(-100%, 0, 0); transform: translate3d(-100%, 0, 0); opacity: 0; }
 }
 .fadeOutLeft { -webkit-animation-name: fadeOutLeft; animation-name: fadeOutLeft; }

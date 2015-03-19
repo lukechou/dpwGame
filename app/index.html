@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>德扑牌型大挑战</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <meta content="yes" name="apple-mobile-web-app-capable">
   <meta name="apple-touch-fullscreen" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes"  />
   <meta name="apple-mobile-web-app-status-bar-style" content="black"  />
@@ -36,15 +37,37 @@
     <img src="images/hm.gif" data-src="images/bl-card.png" alt="bl-card" class="j-lazyload g-bl-card j-game-rm animated" />
     <img src="images/hm.gif" data-src="images/card.png" alt="card-text" class="j-lazyload g-card j-game-rm animated" id="j-card"/>
     <div class="btn-group j-game-rm animated">
-      <img src="images/btn-g1.png" alt="限时模式" class="btn-g1 j-game-start" data-gametype="0"/>
-      <img src="images/btn-g2.png" alt="限题模式" class="btn-g2 j-game-start" data-gametype="1"/>
+      <img src="images/btn-g1.png" alt="限时模式" class="btn-g1 j-game-start" data-gametype="1"/>
+      <img src="images/btn-g2.png" alt="限题模式" class="btn-g2 j-game-start" data-gametype="2"/>
     </div>
 
     <div class="g-main" id="j-game-main">
-      <div class="game-card" id="j-game-card"></div>
-      <img src="images/bg-bottom.jpg" alt="bg-bottom" class="bg-bottom">
-      <div class="card-group" id="j-card-group">
+
+      <div class="match-box match-lbox" id="j-item-count">
+        <div class="limit-item">
+          <div class="left"> <b>已答对</b>
+            <span id="j-left-g"> <i class="iconfont">&#xe613;</i>
+            </span>
+          </div>
+          <div class="right"> <b>答错</b>
+            <span id="j-left-r"> <i class="iconfont">&#xe613;</i>
+            </span>
+          </div>
+        </div>
       </div>
+      <div class="match-box match-rbox" id="j-limit">
+        <i class="iconfont">&#xe604;</i><i class="iconfont">&#xe613;</i>
+        <i class="iconfont small">&#xe604;</i><i class="iconfont small">&#xe613;</i>
+      </div>
+      <div class="match-box match-rbox match-ti" id="j-ti">
+        <i class="iconfont">&#xe613;</i><i class="iconfont">&#xe613;</i><span>:</span><i class="iconfont">&#xe613;</i><i class="iconfont">&#xe613;</i><div class="ml"><i class="iconfont small">&#xe613;</i><i class="iconfont small">&#xe613;</i></div>
+      </div>
+
+
+      <div class="game-card" id="j-game-card"></div>
+      <div class="game-card game-mycard" id="j-game-mycard"></div>
+      <img src="images/bg-bottom.jpg" alt="bg-bottom" class="bg-bottom">
+      <div class="card-group" id="j-card-group"></div>
     </div>
 
   </div>
@@ -60,7 +83,9 @@
         <ul class="card-list">
           <li>
             <div class="card-box">
-              <span class="card card-red"> <i class="iconfont">&#xe608;</i> <i class="iconfont">&#xe60f;</i>
+              <span class="card card-red">
+                <i class="iconfont">&#xe608;</i>
+                <i class="iconfont">&#xe60f;</i>
               </span>
               <span class="card card-red">
                 <i class="iconfont">&#xe609;</i>
@@ -79,7 +104,8 @@
                 <i class="iconfont">&#xe60f;</i>
               </span>
             </div>
-            <div class="card-text"> <b>1.皇家同花顺</b>
+            <div class="card-text">
+              <b>1.皇家同花顺</b>
               <span>同一花色最大的顺子</span>
             </div>
           </li>
@@ -106,7 +132,8 @@
                 <i class="iconfont">&#xe610;</i>
               </span>
             </div>
-            <div class="card-text"> <b>2.同花顺</b>
+            <div class="card-text">
+              <b>2.同花顺</b>
               <span>同一花色的顺子</span>
             </div>
           </li>
@@ -346,10 +373,12 @@
         <h4 class="title">恭喜您</h4>
         <p class="text">
           本次游戏您用时
-          <span class="fc-red">35</span>
-          秒,击败世界40%的人。
+          <span class="fc-red" id="j-rank-time"></span>
+          秒,击败世界
+          <span id="j-rank"></span>
+          %的人。
         </p>
-        <img src="images/btn-again.png" alt="再次挑战" class="end-again"/>
+        <img src="images/btn-again.png" alt="再次挑战" class="end-again" id="j-game-restart"/>
       </div>
       <div class="end-bottom">
         <img src="images/dpw-logo.jpg" alt="dpw-logo" class="dpw-logo"/>
