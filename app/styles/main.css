@@ -14,12 +14,12 @@ body, .preload { background: rgb(69, 72, 77); /* Old browsers */ background: -mo
 .preload { position: fixed; z-index: 101; top: 0; display: block; width: 100%; max-width: 640px; height: 100%; }
 .load { position: absolute; top: 50%; right: 0; left: 0; width: 100%; margin: auto; -webkit-transform: translate3d(0, -50%, 0); transform: translate3d(0, -50%, 0); }
 .load-logo { display: block; margin: 0 auto; text-align: center; color: #fff; }
-.game { position: relative; display: none; width: 100%; height: 100%; }
+.game { position: relative; display: none; width: 100%; height: 100%; max-height: 1000px; }
 .g-bg { width: 100%; }
 .g-bottom { height: 500px; }
 .g-table { position: absolute; top: 5%; right: 0; left: 0; width: 96%; margin: auto; }
 .g-help { position: absolute; top: 27%; right: 0; left: 0; width: 73%; margin: auto; }
-.g-card { position: absolute; right: 3%; bottom: 3%; width: 14%; -webkit-transition: .3s .5s; transition: .3s .5s; }
+.g-card { position: absolute; right: 3%; bottom: 3%; width: 14%; -webkit-transition: .3s .5s; transition: .3s .5s; z-index: 111; }
 .g-card.active { -webkit-transform: translateX(100%) rotate(360deg); transform: translateX(100%) rotate(360deg); opacity: 0; }
 .g-bl-card { position: absolute; bottom: 0; left: 0; width: 33%; }
 .btn-group { position: absolute; bottom: 8%; width: 100%; }
@@ -36,7 +36,7 @@ body, .preload { background: rgb(69, 72, 77); /* Old browsers */ background: -mo
 .card-red { color: #cc1819; }
 
 /* mask */
-.m-mask { position: fixed; z-index: 101; top: 0; right: 0; left: 0; width: 100%; max-width: 640px; height: 100%; margin: auto; -webkit-transition: .4s; transition: .4s; -webkit-transition-timing-function: ease-in-out; transition-timing-function: ease-in-out; -webkit-transform: translateY(100%); transform: translateY(100%); }
+.m-mask { position: fixed; z-index: 120; top: 0; right: 0; left: 0; width: 100%; max-width: 640px; height: 100%; margin: auto; -webkit-transition: .4s; transition: .4s; -webkit-transition-timing-function: ease-in-out; transition-timing-function: ease-in-out; -webkit-transform: translateY(100%); transform: translateY(100%); }
 .m-mask.active { -webkit-transform: translateY(0); transform: translateY(0); }
 .m-mask-bg { width: 100%; height: 100%; background: rgba(0, 0, 0, .7); }
 .m-mask-main { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: none; overflow: hidden; width: 90%; height: 90%; margin: auto; padding-bottom: 10px; border: 2px #fdbe01 solid; border-radius: 5px; background: #fff2cd; }
@@ -52,23 +52,41 @@ body, .preload { background: rgb(69, 72, 77); /* Old browsers */ background: -mo
 .end-again { width: 33%; }
 .end-bottom { position: absolute; bottom: 0; width: 100%; height: 30%; padding: 0 6%; background: #202020; }
 .dpw-logo { position: absolute; top: 50%; float: left; width: 25%; -webkit-transform: translateY(-50%); transform: translateY(-50%); -webkit-border-radius: 10px; border-radius: 10px; }
-.end-bottom p { position: absolute; top: 50%; right: 0; width: 60%; margin: 0; -webkit-transform: translateY(-50%); transform: translateY(-50%); text-align: center; color: #fff; }
+.end-bottom p { position: absolute; top: 50%; right: 0; width: 60%; margin: 0; -webkit-transform: translateY(-50%); transform: translateY(-50%); text-align: center; color: #fff; font-size: 1.6rem; }
 .fc-red { font-size: 2rem; font-weight: bold; color: #f91514; }
 
 /* Game Nav */
 .g-main { display: none; -webkit-transition: .2s .3s; transition: .2s .3s; }
 .bg-bottom { position: absolute; bottom: 0; left: 0; width: 100%; }
-.card-group { position: absolute; bottom: 0; width: 100%; }
+.card-group { position: absolute; bottom: 0; width: 100%; background: url(../images/bg-bottom.jpg) repeat-x; background-size: cover; z-index: 112;}
 .card-group > button { position: relative; float: left; width: 29%; margin: 0 2% 2%; border: none; background: transparent; color: #3d2200; font-weight: bold; }
 .card-group > button.active { color: #f5f7a3 }
 .card-group > button > img { width: 100%; }
 .card-group > button > span { font-size: 1.6rem; line-height: 1; position: absolute; top: 47%; right: 0; left: 0; width: 16px; margin: auto; -webkit-transform: translateY(-50%); transform: translateY(-50%); }
-.game-card { position: absolute; top: 30%; right: 0; left: 0; margin: auto; width: 75%; }
-.game-card .card { width: 18%; margin: 0 1%; padding: 4px 0; }
-.game-card .card .iconfont { font-size: 3rem; }
+.game-card { position: absolute; top: 32%; right: 0; left: 0; margin: auto; width: 75%; }
+.game-card .card { width: 18%; margin: 0 1%; padding: 1px 0 3px; }
+.game-card .card .iconfont { font-size: 3rem; line-height: 1; }
+.game-card .card .iconfont:nth-child(1) { height: 26px; }
 .g-main.active { display: block; }
-.game-mycard { width: 32%; top: 68%; }
-.game-mycard .card { width: 46%; margin: 0 2%; }
+.game-mycard { width: 28%; top: 68%; }
+.game-mycard .card { width: 46%; margin: 0 2%; padding: 3px 6px 10px; }
+.game-mycard .card .iconfont:nth-child(1){
+  height: 20px;
+}
+.game-mycard .card:nth-child(1){
+  position: absolute;
+  left: 10%;
+}
+
+.game-mycard .card:nth-child(2){
+  position: absolute;
+    right: 10%;
+}
+
+
+.game-mycard .card .iconfont { font-size: 2rem; text-align: left; }
+.game-mycard .card:nth-child(1) { -webkit-transform: rotate(-7deg); transform: rotate(-7deg); }
+.game-mycard .card:nth-child(2) { -webkit-transform: rotate(5deg) translateY(5%); transform: rotate(5deg) translateY(5%); }
 .match-box { position: absolute; bottom: 25%; display: none; color: #a84621; background: url(../images/box.png) no-repeat; width: 84px; height: 50px; text-align: center; background-size: 84px; font-size: 3rem; }
 .match-lbox { display: block; left: 2%; }
 .match-rbox { right: 2%; line-height: 47px; text-align: left; }
@@ -76,20 +94,20 @@ body, .preload { background: rgb(69, 72, 77); /* Old browsers */ background: -mo
 .match-rbox .iconfont { margin: 0 1px; display: inline-block; width: 12px; font-size: 3rem; }
 .match-rbox .iconfont.small { font-size: 2rem; }
 .match-rbox>span { position: relative; left: 9px; top: -2px; }
-
-.match-ti .iconfont{ font-size: 2.4rem; width: 9px;}
-.match-ti>span{ left: 6px;}
-.match-ti .iconfont.small{ font-size: 2rem; width: 8px;}
-.match-ti .ml{ margin-left: 3px; display: inline-block;}
+.match-ti .iconfont { font-size: 2.4rem; width: 9px; }
+.match-ti>span { left: 6px; }
+.match-ti .iconfont.small { font-size: 2rem; width: 8px; }
+.match-ti .ml { margin-left: 3px; display: inline-block; }
 
 /* 左侧数据统计 */
 .limit-item { width: 100%; font-size: 12px; height: 100%; padding: 3px 0; }
-.limit-item .iconfont { display: inline-block; width: 10px; padding-top: 2px; }
+.limit-item .iconfont { display: inline-block; width: 10px;  margin-top: -1px;
+  font-size: 2.4rem; }
 .limit-item .left, .limit-item .right { width: 50%; float: left; height: 100%; text-align: center; }
 .limit-item .left { border-right: 1px #96814c solid; color: #2ebe4f; }
 .limit-item .right { border-left: 1px #96814c solid; color: #e24637; }
 .limit-item .left b, .limit-item .right b { display: block; line-height: 19px; height: 22px; }
-.limit-item .left span, .limit-item .right span { display: block; height: 22px; }
+.limit-item .left span, .limit-item .right span { padding-right: 5px; display: block; height: 22px; }
 
 /*********** Animated **********/
 .animated { -webkit-animation-duration: .3s; animation-duration: .3s; -webkit-animation-fill-mode: both; animation-fill-mode: both; }
@@ -115,3 +133,60 @@ body, .preload { background: rgb(69, 72, 77); /* Old browsers */ background: -mo
   100% { -webkit-transform: translate3d(-100%, 0, 0); -ms-transform: translate3d(-100%, 0, 0); transform: translate3d(-100%, 0, 0); opacity: 0; }
 }
 .fadeOutLeft { -webkit-animation-name: fadeOutLeft; animation-name: fadeOutLeft; }
+
+/* media */
+
+/* 4s*/
+@media (max-height:441px) {
+  .game-card { top: 35%; }
+  .g-help{ top: 32%;}
+  .btn-group{ bottom: 0;}
+  .btn-g1, .btn-g2{ width: 42%;}
+  .card-list{ height: 250px;}
+  .m-mask-main{ height: 85%;}
+  .match-box{ bottom: 28%;}
+  .game-mycard{ top: 62%;}
+  .game-mycard .card{ padding: 5px 5px 6px;}
+  .end-top .title{ margin:1rem auto;}
+  .end-top .text{ margin:0 auto 1rem;}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

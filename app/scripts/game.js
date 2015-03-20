@@ -52,7 +52,7 @@ var dpwGame = (function () {
     'key': '4008-898-310-POKER-IOS',
     'onGameOver': null,
     'url': 'http://poker.yuncai.com/Api/Http/index.php',
-    'errorTimtOut': 50,
+    'errorTimtOut': 500,
     'missTime': 0,
     'limitItem': 50,
     'fps': 1000 / 60,
@@ -78,7 +78,10 @@ var dpwGame = (function () {
 
     var _this = this;
     _this.status = 0;
-    _this.issue = null;
+    _this.trueCount = 0;
+    _this.errorCount = 0;
+    _this.itemIndex = 0;
+    _this.issue = [];
     _this.dtzId = null;
     _this.startTime = null;
     _this.endTime = null;
@@ -92,8 +95,9 @@ var dpwGame = (function () {
       _this.onRestart();
     }
 
-    _this.getIssue();
-    _this.start();
+    _this.getIssue(function () {
+      _this.start(_this.gameType)
+    });
 
   };
 
@@ -101,14 +105,15 @@ var dpwGame = (function () {
   dpwGame.prototype.gameOver = function () {
 
     var _this = this;
-    var now = (new Date().getTime() / 1000).toFixed(0);
+    var now = Number((new Date().getTime() / 1000).toFixed(0)) + Number(_this.missTime);
 
     if (_this.gameType == 2) {
       clearInterval(_this.tiIntervel);
     }
 
-    now = Number(now) + _this.missTime;
     _this.endTime = now;
+
+    var uTime = ((new Date().getTime() - _this.clientStartTime) / 1000).toFixed(0);
 
     // lock game status
     _this.status = 2;
@@ -128,11 +133,22 @@ var dpwGame = (function () {
       dataType: 'text',
       data: data,
       success: function (data) {
+
         var obj = _this.parseApiData(data);
+        var html = '本次游戏您用时<span class="fc-red">' + uTime + '</span>秒,击败世界<span>' + obj.retData.rank_ratio + '</span>%的人。';
+
+        if ((_this.trueCount + _this.errorCount) === 0) {
+          html = '你一题都没有做还想拿名次，太天真了';
+        }
+
         if (obj.retCode === 100000 && obj.md5Status) {
+
+          if (_this.gameType == 1) {
+            uTime = 60;
+          }
+
           //更新排名 和 时间
-          $('#j-rank').html(obj.retData.rank_ratio);
-          $('#j-rank-time').html(_this.endTime - _this.startTime);
+          $('#j-rank').html(html);
 
           if (_this.onGameOver) {
             _this.onGameOver();
@@ -353,7 +369,7 @@ var dpwGame = (function () {
       var t3 = null;
       var now = new Date().getTime();
       t = Number(now) - Number(sTime);
-      t1 = Number((t / 1000 / 60).toFixed(0));
+      t1 = Math.floor(t / 1000 / 60);
       t2 = Number((t / 1000 % 60).toFixed(0));
       t3 = (t / 100).toFixed(2).split('.')[1];
 
@@ -400,7 +416,7 @@ var dpwGame = (function () {
     // timeout control
     setTimeout(function () {
 
-      limitEl.html(0);
+      limitEl.html('<i class="iconfont">&#xe604;</i><i class="iconfont">&#xe613;</i> <i class="iconfont small">&#xe604;</i><i class="iconfont small">&#xe613;</i>');
       _this.gameOver();
       return;
 
@@ -449,6 +465,7 @@ var dpwGame = (function () {
             //更新游戏状态 获取问题
             _this.status = 1;
             _this.getOneQuestion();
+            _this.clientStartTime = new Date().getTime();
 
             //渲染ui
             $('.j-game-rm').addClass('fadeOutLeft');
@@ -528,7 +545,7 @@ var dpwGame = (function () {
   };
 
   //获取题目
-  dpwGame.prototype.getIssue = function (args) {
+  dpwGame.prototype.getIssue = function (callBack) {
 
     var _this = this;
 
@@ -549,6 +566,10 @@ var dpwGame = (function () {
         if (obj.retCode === 100000 && obj.md5Status) {
 
           _this.issue = _this.issue.concat(obj.retData);
+
+          if (callBack) {
+            callBack();
+          }
 
         } else {
           alert(obj.retMsg);

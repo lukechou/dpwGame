@@ -61,12 +61,12 @@ window.addEventListener('DOMContentLoaded', function () {
     mask.prototype.bindEvent = function () {
       var _this = this;
 
-      _this.cardEl.on('touchstart', function () {
+      _this.cardEl.on('touchstart click', function () {
         _this.type = 1;
         _this.toggleMask(1, 1);
       });
 
-      _this.closeEl.on('touchstart', function () {
+      _this.closeEl.on('touchstart click', function () {
         _this.toggleMask(0, 0);
       });
 
@@ -129,19 +129,19 @@ window.addEventListener('DOMContentLoaded', function () {
   });
 
   // add btn event
-  $('.j-game-start').on('touchstart', function (event) {
+  $('.j-game-start').on('touchstart click', function (event) {
     var gameType = $(this).attr('data-gametype');
     game.start(gameType);
   });
 
-  $('#j-card-group').on('touchstart', 'button', function (event) {
+  $('#j-card-group').on('touchstart click', 'button', function (event) {
     event.preventDefault();
     var aw = Number($(this).attr('data-aw')) || 0;
     game.answerItem(aw, $(this));
 
   });
 
-  $('#j-game-restart').on('touchstart', function (event) {
+  $('#j-game-restart').on('touchstart click', function (event) {
     event.preventDefault();
     game.restart();
   });
