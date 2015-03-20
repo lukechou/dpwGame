@@ -31,6 +31,8 @@ var dpwGame = (function () {
    * errorTimtOut  答错题目时间限制
    * missTime  服务器与前端时间误差
    * limitItem  限题数目
+   * errorLimitSeconds  限时答错减少时间
+   * errorXianTiSeconds  限题答错增加时间
    *
    */
   dpwGame.prototype = {
@@ -46,17 +48,18 @@ var dpwGame = (function () {
     'itemIndex': 0,
     'awGroup': ['', '皇家同花顺', '同花顺', '金刚', '葫芦', '同花', '顺子', '三条', '两对', '一对', '高牌'],
     'colorGroup': ['', '&#xe60e;', '&#xe60d;', '&#xe610;', '&#xe60f;'],
-    'cardGroup': ['', '', '&#xe600;', '&#xe601;', '&#xe602;', '&#xe603;', '&#xe604;', '&#xe605;', '&#xe606;', '&#xe607;', '&#xe608;', '&#xe609;', '&#xe60a;', '&#xe60b;', '&#xe60c;'],
+    'cardGroup': ['', '', '&#xe600;', '&#xe601;', '&#xe602;', '&#xe603;', '&#xe604;', '&#xe605;', '&#xe606;', '&#xe607;', '&#xe608;', '&#xe609;', '&#xe60b;', '&#xe60a;', '&#xe60c;'],
     'errorCount': 0,
     'trueCount': 0,
     'key': '4008-898-310-POKER-IOS',
     'onGameOver': null,
     'url': 'http://poker.yuncai.com/Api/Http/index.php',
-    'errorTimtOut': 500,
+    'errorTimtOut': 50,
     'missTime': 0,
     'limitItem': 50,
     'fps': 1000 / 60,
-    'onRestart': null
+    'onRestart': null,
+    'errorLimitSeconds': 2,
   };
 
   //游戏初始化
@@ -72,6 +75,27 @@ var dpwGame = (function () {
     if (_this.onInit) {
       _this.onInit();
     }
+  };
+
+  dpwGame.prototype.reset = function () {
+
+    var _this = this;
+    _this.status = 0;
+    _this.trueCount = 0;
+    _this.errorCount = 0;
+    _this.itemIndex = 0;
+    _this.issue = [];
+    _this.dtzId = null;
+    _this.startTime = null;
+    _this.endTime = null;
+
+    $('#j-left-g').html('<i class="iconfont">&#xe613;</i>');
+    $('#j-left-r').html('<i class="iconfont">&#xe613;</i>');
+    $('#j-limit').html('<i class="iconfont">&#xe604;</i><i class="iconfont">&#xe613;</i><i class="iconfont small">&#xe604;</i><i class="iconfont small">&#xe613;</i>');
+    $('#j-ti').html('<i class="iconfont">&#xe613;</i><i class="iconfont">&#xe613;</i><span>:</span><i class="iconfont">&#xe613;</i><i class="iconfont">&#xe613;</i><div class="ml"><i class="iconfont small">&#xe613;</i><i class="iconfont small">&#xe613;</i>');
+
+    _this.getIssue();
+
   };
 
   dpwGame.prototype.restart = function () {
@@ -107,16 +131,21 @@ var dpwGame = (function () {
     var _this = this;
     var now = Number((new Date().getTime() / 1000).toFixed(0)) + Number(_this.missTime);
 
-    if (_this.gameType == 2) {
-      clearInterval(_this.tiIntervel);
-    }
-
     _this.endTime = now;
 
     var uTime = ((new Date().getTime() - _this.clientStartTime) / 1000).toFixed(0);
 
     // lock game status
     _this.status = 2;
+
+    if (_this.gameType == 2) {
+      clearInterval(_this.tiIntervel);
+    }
+
+    if (_this.gameType == 2) {
+      now = (Number(now) + (_this.errorCount * _this.errorXianTiSeconds)).toFixed(0);
+      uTime = Number(uTime) + (_this.errorCount * _this.errorXianTiSeconds);
+    }
 
     var data = _this.createApiObj({
       mod: 'webapp',
@@ -135,7 +164,27 @@ var dpwGame = (function () {
       success: function (data) {
 
         var obj = _this.parseApiData(data);
-        var html = '本次游戏您用时<span class="fc-red">' + uTime + '</span>秒,击败世界<span>' + obj.retData.rank_ratio + '</span>%的人。';
+
+        var html = '';
+
+        if (_this.gameType == 2) {
+
+          if(uTime>60){
+
+            var uFen = Math.floor(uTime/60);
+            var uSec = uTime%60;
+
+            uTime = uFen+'</span>分'+'<span class="fc-red">'+uSec+'</span>秒';
+
+          }else{
+            uTime = uTime+'</span>秒';
+          }
+
+          html = '本次游戏您用时<span class="fc-red">' + uTime + ',击败世界<span>' + obj.retData.rank_ratio + '</span>%的人。';
+
+        } else {
+          html = '本次游戏您答对<span class="fc-red">' + _this.trueCount + '</span>题,击败世界<span>' + obj.retData.rank_ratio + '</span>%的人。';
+        }
 
         if ((_this.trueCount + _this.errorCount) === 0) {
           html = '你一题都没有做还想拿名次，太天真了';
@@ -149,6 +198,7 @@ var dpwGame = (function () {
 
           //更新排名 和 时间
           $('#j-rank').html(html);
+          _this.status = 2;
 
           if (_this.onGameOver) {
             _this.onGameOver();
@@ -167,7 +217,7 @@ var dpwGame = (function () {
 
     var _this = this;
 
-    if (_this.gameType == 2 && _this.trueCount == _this.limitItem) {
+    if (_this.gameType == 2 && _this.itemIndex == _this.limitItem) {
       _this.gameOver();
       return;
     }
@@ -191,7 +241,7 @@ var dpwGame = (function () {
       overStatus = true;
     }
 
-    if (_this.gameType == 2 && _this.trueCount == _this.limitItem) {
+    if (_this.gameType == 2 && _this.itemIndex == _this.limitItem) {
       overStatus = true;
     }
 
@@ -232,15 +282,16 @@ var dpwGame = (function () {
   dpwGame.prototype.answerItem = function (aw, btn) {
 
     var _this = this;
-    var nextQuestionSeconds = 200;
+    var nextQuestionSeconds = 80;
 
-    if (_this.status === 4) {
+    if (_this.status === 4 || _this.status === 2) {
       return;
     }
 
     var isGameOver = _this.getGameOverStatus();
 
     if (isGameOver) {
+      _this.status = 2;
       return;
     }
 
@@ -254,14 +305,27 @@ var dpwGame = (function () {
 
     btn.addClass('active');
     if (aw === rightAw) {
+
       btn.find('img').attr('src', 'images/btn-g.png');
       _this.trueCount++;
-      _this.updateLeftbox(0, _this.trueCount);
+
+      if (_this.gameType === 2) {
+        _this.updateLeftbox(1, _this.trueCount);
+        _this.updateLeftbox(0, _this.limitItem - _this.itemIndex);
+      } else {
+        _this.updateLeftbox(0, _this.trueCount);
+      }
+
     } else {
       btn.find('img').attr('src', 'images/btn-r.png');
       nextQuestionSeconds = _this.errorTimtOut;
       _this.errorCount++;
-      _this.updateLeftbox(1, _this.errorCount);
+
+      if (_this.gameType === 2) {
+        _this.updateLeftbox(0, _this.limitItem - _this.itemIndex);
+      } else {
+        _this.updateLeftbox(1, _this.errorCount);
+      }
     }
 
     //获取更多
@@ -368,7 +432,9 @@ var dpwGame = (function () {
       var t2 = null;
       var t3 = null;
       var now = new Date().getTime();
-      t = Number(now) - Number(sTime);
+
+      t = (Number(now) - Number(sTime)) + (_this.errorCount * _this.errorXianTiSeconds * 1000);
+
       t1 = Math.floor(t / 1000 / 60);
       t2 = Number((t / 1000 % 60).toFixed(0));
       t3 = (t / 100).toFixed(2).split('.')[1];
@@ -387,7 +453,14 @@ var dpwGame = (function () {
     }, _this.fps);
   };
 
-  // 游戏限时模式
+  /*
+   *
+   * name  游戏限时模式
+   * outTime  限时毫秒数
+   * endTime  限时终结时间戳
+   * limitEl  时间DOM
+   *
+   */
   dpwGame.prototype.limitTypeGame = function () {
 
     var _this = this;
@@ -400,32 +473,34 @@ var dpwGame = (function () {
 
     _this.limitTime = setInterval(function () {
 
+      // 当前时间戳
       var now = new Date().getTime();
-      var t = ((endTime - now) / 1000).toFixed(0);
+
+      // 剩余秒数
+      var t = ((endTime - now) / 1000).toFixed(0) - _this.errorCount * _this.errorLimitSeconds;
+
+      var newNum = (Number(((endTime - now) / 1000).toFixed(2)) - (_this.errorCount * _this.errorLimitSeconds)).toFixed(2);
 
       if (t > 0) {
-        var newNum = ((endTime - now) / 1000).toFixed(2);
-        var arr = newNum.split('.');
+
+        var arr = newNum.toString().split('.');
+
         limitEl.html(_this.getNewFontNum(arr[0]) + ' ' + _this.getNewFontNum(arr[1], 'small'));
+
       } else {
+
         clearInterval(_this.limitTime);
+        limitEl.html('<i class="iconfont">&#xe604;</i><i class="iconfont">&#xe613;</i> <i class="iconfont small">&#xe604;</i><i class="iconfont small">&#xe613;</i>');
+        _this.gameOver();
+
       }
 
     }, _this.fps);
 
-    // timeout control
-    setTimeout(function () {
-
-      limitEl.html('<i class="iconfont">&#xe604;</i><i class="iconfont">&#xe613;</i> <i class="iconfont small">&#xe604;</i><i class="iconfont small">&#xe613;</i>');
-      _this.gameOver();
-      return;
-
-    }, outTime);
-
   };
 
   // 游戏开始
-  dpwGame.prototype.start = function (type) {
+  dpwGame.prototype.start = function (type, isReStart) {
 
     var _this = this;
     var now = Number((new Date().getTime() / 1000).toFixed(0));
@@ -465,6 +540,11 @@ var dpwGame = (function () {
             //更新游戏状态 获取问题
             _this.status = 1;
             _this.getOneQuestion();
+
+            //更新游戏模式判断变量
+            _this.errorLimitSeconds = obj.retData.type1_dec_second || 2;
+            _this.errorXianTiSeconds = obj.retData.type2_add_second || 5;
+            _this.limitItem = obj.retData.type2_exercise_num || 50;
             _this.clientStartTime = new Date().getTime();
 
             //渲染ui
@@ -473,10 +553,19 @@ var dpwGame = (function () {
 
             //添加 限时模式时间判断
             if (_this.gameType === 1) {
+              $('#j-item-count .left').removeClass('active');
+              $('#j-item-count .right').removeClass('active');
+              $('#j-title1').html('已答对');
+              $('#j-title2').html('答错');
               _this.limitTypeGame();
             }
 
             if (_this.gameType === 2) {
+              $('#j-item-count .left').addClass('active');
+              $('#j-item-count .right').addClass('active');
+              $('#j-title1').html('剩余');
+              $('#j-title2').html('已答对');
+              $('#j-left-g').html('<i class="iconfont">&#xe603;</i><i class="iconfont">&#xe613;</i>');
               _this.tiTypeGame();
             }
 

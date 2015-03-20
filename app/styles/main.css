@@ -58,7 +58,7 @@ body, .preload { background: rgb(69, 72, 77); /* Old browsers */ background: -mo
 /* Game Nav */
 .g-main { display: none; -webkit-transition: .2s .3s; transition: .2s .3s; }
 .bg-bottom { position: absolute; bottom: 0; left: 0; width: 100%; }
-.card-group { position: absolute; bottom: 0; width: 100%; background: url(../images/bg-bottom.jpg) repeat-x; background-size: cover; z-index: 112;}
+.card-group { position: absolute; bottom: 0; width: 100%; background: url(../images/bg-bottom.jpg) repeat-x; background-size: cover; z-index: 112; }
 .card-group > button { position: relative; float: left; width: 29%; margin: 0 2% 2%; border: none; background: transparent; color: #3d2200; font-weight: bold; }
 .card-group > button.active { color: #f5f7a3 }
 .card-group > button > img { width: 100%; }
@@ -70,20 +70,9 @@ body, .preload { background: rgb(69, 72, 77); /* Old browsers */ background: -mo
 .g-main.active { display: block; }
 .game-mycard { width: 28%; top: 68%; }
 .game-mycard .card { width: 46%; margin: 0 2%; padding: 3px 6px 10px; }
-.game-mycard .card .iconfont:nth-child(1){
-  height: 20px;
-}
-.game-mycard .card:nth-child(1){
-  position: absolute;
-  left: 10%;
-}
-
-.game-mycard .card:nth-child(2){
-  position: absolute;
-    right: 10%;
-}
-
-
+.game-mycard .card .iconfont:nth-child(1) { height: 20px; }
+.game-mycard .card:nth-child(1) { position: absolute; left: 10%; }
+.game-mycard .card:nth-child(2) { position: absolute; right: 10%; }
 .game-mycard .card .iconfont { font-size: 2rem; text-align: left; }
 .game-mycard .card:nth-child(1) { -webkit-transform: rotate(-7deg); transform: rotate(-7deg); }
 .game-mycard .card:nth-child(2) { -webkit-transform: rotate(5deg) translateY(5%); transform: rotate(5deg) translateY(5%); }
@@ -101,11 +90,12 @@ body, .preload { background: rgb(69, 72, 77); /* Old browsers */ background: -mo
 
 /* 左侧数据统计 */
 .limit-item { width: 100%; font-size: 12px; height: 100%; padding: 3px 0; }
-.limit-item .iconfont { display: inline-block; width: 10px;  margin-top: -1px;
-  font-size: 2.4rem; }
+.limit-item .iconfont { display: inline-block; width: 10px; margin-top: -1px; font-size: 2.4rem; }
 .limit-item .left, .limit-item .right { width: 50%; float: left; height: 100%; text-align: center; }
 .limit-item .left { border-right: 1px #96814c solid; color: #2ebe4f; }
 .limit-item .right { border-left: 1px #96814c solid; color: #e24637; }
+.limit-item .left.active { border-right: 1px #96814c solid; color: #e24637; }
+.limit-item .right.active { border-left: 1px #96814c solid; color: #2ebe4f; }
 .limit-item .left b, .limit-item .right b { display: block; line-height: 19px; height: 22px; }
 .limit-item .left span, .limit-item .right span { padding-right: 5px; display: block; height: 22px; }
 
@@ -139,54 +129,17 @@ body, .preload { background: rgb(69, 72, 77); /* Old browsers */ background: -mo
 /* 4s*/
 @media (max-height:441px) {
   .game-card { top: 35%; }
-  .g-help{ top: 32%;}
-  .btn-group{ bottom: 0;}
-  .btn-g1, .btn-g2{ width: 42%;}
-  .card-list{ height: 250px;}
-  .m-mask-main{ height: 85%;}
-  .match-box{ bottom: 28%;}
-  .game-mycard{ top: 62%;}
-  .game-mycard .card{ padding: 5px 5px 6px;}
-  .end-top .title{ margin:1rem auto;}
-  .end-top .text{ margin:0 auto 1rem;}
+  .g-help { top: 32%; }
+  .btn-group { bottom: 0; }
+  .btn-g1, .btn-g2 { width: 42%; }
+  .card-list { height: 250px; }
+  .m-mask-main { height: 85%; }
+  .match-box { bottom: 28%; }
+  .game-mycard { top: 62%; }
+  .game-mycard .card { padding: 5px 5px 6px; }
+  .end-top .title { margin: 1rem auto; }
+  .end-top .text { margin: 0 auto 1rem; }
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#j-left-r{ margin-right:5px; }

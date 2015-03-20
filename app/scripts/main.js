@@ -67,7 +67,18 @@ window.addEventListener('DOMContentLoaded', function () {
       });
 
       _this.closeEl.on('touchstart click', function () {
-        _this.toggleMask(0, 0);
+
+        if (game.status != 0) {
+
+          $('.j-game-rm').removeClass('fadeOutLeft');
+          $('#j-game-main').removeClass('active');
+          game.reset();
+          _this.toggleMask(0, 0);
+
+        } else {
+          _this.toggleMask(0, 0);
+        }
+
       });
 
     };
@@ -130,8 +141,10 @@ window.addEventListener('DOMContentLoaded', function () {
 
   // add btn event
   $('.j-game-start').on('touchstart click', function (event) {
+
     var gameType = $(this).attr('data-gametype');
     game.start(gameType);
+
   });
 
   $('#j-card-group').on('touchstart click', 'button', function (event) {
